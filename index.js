@@ -39,9 +39,12 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", async ({ from, to, message, imageUrl }) => {
     try {
-        const decoded = jwt.verify(from, "prasanna");
+        // const decoded = jwt.verify(from, "prasanna");
     
-        const userId = decoded.userId; // ✔ correct
+        // const userId = decoded.userId; // ✔ correct
+        const userId = socket.userId;
+        if(!userId) return;
+        
       const allowed = await isFriend(userId, to);
       if (!allowed) return;
 
