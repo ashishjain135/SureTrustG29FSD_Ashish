@@ -35,10 +35,25 @@ export const createOTP = async (req, res) => {
         user: process.env.mail_id,
         pass: process.env.mail_app_password, // Gmail App Password (correct)
       },
+      tls:{
+        rejectUnauthorized:false,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     });
 
+    transporter.verify((error, success) => {
+  if (error) {
+    console.log("SMTP VERIFY ERROR:", error.message);
+  } else {
+    console.log("SMTP SERVER READY");
+  }
+  });
+
+
     const info = await transporter.sendMail({
-      from: "srenisivadas2004@gmail.com",
+      from: "process.env.mail_id",
       to: email, // FIXED
       subject: "Your OTP Code",
       html: `<h2>Your OTP is: <b>${generatedOTP}</b></h2>`,
