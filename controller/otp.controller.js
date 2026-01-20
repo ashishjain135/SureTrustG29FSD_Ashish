@@ -28,12 +28,12 @@ export const createOTP = async (req, res) => {
     });
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
       auth: {
-        user: process.env.mail_id,
-        pass: process.env.mail_app_password, // Gmail App Password (correct)
+        user: process.env.BREVO_USER,
+        pass: process.env.BREVO_PASS, // Gmail App Password (correct)
       },
       tls:{
         rejectUnauthorized:false,
