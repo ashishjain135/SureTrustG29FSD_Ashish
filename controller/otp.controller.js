@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import { OTP } from "../schemas/otp.schema.js";
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer";
+import fetch from "node-fetch";
 import UserSchema from "../schemas/User.schema.js";
 import bcrypt from "bcryptjs";
 dotenv.config()
@@ -8,10 +9,9 @@ const salt = bcrypt.genSaltSync(10);
 
 export const createOTP = async (req, res) => {
   try {
-    console.log("Check");
-
     const { email } = req.body;
-    console.log("Email received for OTP:", email);
+
+    console.log("Sending OTP to:", email);
 
     const user = await UserSchema.findOne({ email });
     if (!user) {
@@ -20,50 +20,34 @@ export const createOTP = async (req, res) => {
 
     const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // save OTP entry
     await OTP.create({
       email,
       otp: generatedOTP,
       createdAt: Date.now(),
     });
 
-    console.log("Using Brevo SMTP to send OTP");
-
-    const transporter = nodemailer.createTransport({
-
-
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.BREVO_USER,
-        pass: process.env.BREVO_PASS, // Gmail App Password (correct)
+    // SEND EMAIL USING BREVO API (NO SMTP)
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
       },
-      tls:{
-        rejectUnauthorized:false,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
+      body: JSON.stringify({
+        sender: { name: "SMF App", email: "no-reply@smf.com" },
+        to: [{ email }],
+        subject: "Your OTP Code",
+        htmlContent: `<h2>Your OTP is: <b>${generatedOTP}</b></h2>`,
+      }),
     });
 
-    transporter.verify((error, success) => {
-  if (error) {
-    console.log("SMTP VERIFY ERROR:", error.message);
-  } else {
-    console.log("SMTP SERVER READY");
-  }
-  });
+    const data = await response.json();
 
-
-    const info = await transporter.sendMail({
-      from: "process.env.mail_id",
-      to: email, // FIXED
-      subject: "Your OTP Code",
-      html: `<h2>Your OTP is: <b>${generatedOTP}</b></h2>`,
-    });
-
-    console.log("Message sent: %s", info.messageId);
+    if (!response.ok) {
+      console.error("Brevo API Error:", data);
+      return res.status(500).json({ message: "Failed to send OTP" });
+    }
 
     res.status(200).json({ message: "OTP sent successfully" });
 
@@ -72,6 +56,7 @@ export const createOTP = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 export const changePasswordWithOTP = async (req, res) => {
