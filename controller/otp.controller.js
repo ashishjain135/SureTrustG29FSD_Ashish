@@ -27,7 +27,11 @@ export const createOTP = async (req, res) => {
       createdAt: Date.now(),
     });
 
+    console.log("Using Brevo SMTP to send OTP");
+
     const transporter = nodemailer.createTransport({
+
+
       host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
