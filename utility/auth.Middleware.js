@@ -10,7 +10,7 @@ export const authMiddleware = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, "prasanna");
+    const decoded = jwt.verify(token,process.env.JWT_SECRET);
 
     const userId = decoded.userId; // ✔ correct
     const user = await UserSchema.findById(userId).select("-password"); // remove password
@@ -23,6 +23,7 @@ export const authMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ message: "Unauthorized Token expired, please login again",
+    expired: true,  });
   }
 };

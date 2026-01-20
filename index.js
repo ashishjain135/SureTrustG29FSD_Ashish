@@ -29,7 +29,7 @@ io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
   socket.on("setup", (token) => {
-    const decoded = jwt.verify(token, "prasanna");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
         const userId = decoded.userId; // ✔ correct
     socket.join(userId);
