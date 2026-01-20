@@ -35,7 +35,7 @@ export const createOTP = async (req, res) => {
         "api-key": process.env.BREVO_API_KEY,
       },
       body: JSON.stringify({
-        sender: { name: "SMF App", email: "no-reply@smf.com" },
+        sender: { name: "SMF App", email: "ashishfarnish135@gmail.com" },
         to: [{ email }],
         subject: "Your OTP Code",
         htmlContent: `<h2>Your OTP is: <b>${generatedOTP}</b></h2>`,
